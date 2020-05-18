@@ -1,6 +1,6 @@
 import { Comment } from './interfaces'
 import { children } from './types'
-import { getTimeAgo } from './util'
+import { getTimeAgo, getVotes } from './util'
 
 class Comments {
     private comments: Comment[]
@@ -128,16 +128,16 @@ class Comments {
         const commentActions = createElement('div', { class: 'comment-actions' })
         const voteUp = createElement('span', { class: 'vote-action vote-action--up' }, '+')
         const voteDown = createElement('span', { class: 'vote-action vote-action--down' }, '-')
-        const commentVotes = createElement('span', { class: 'votes' }, currVotes.toString())
+        const commentVotes = createElement('span', { class: 'votes' }, getVotes(currVotes))
 
         voteUp.addEventListener('click', () => {
             currVotes += 1
-            commentVotes.innerHTML = currVotes.toString()
+            commentVotes.innerHTML = getVotes(currVotes)
         })
 
         voteDown.addEventListener('click', () => {
             currVotes -= 1
-            commentVotes.innerHTML = currVotes.toString()
+            commentVotes.innerHTML = getVotes(currVotes)
         })
 
         commentActions.appendChild(voteUp)

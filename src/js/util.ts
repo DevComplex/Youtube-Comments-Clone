@@ -1,5 +1,32 @@
 import { time } from './types'
 
+export function getVotes(votes: number) : string {
+    if (votes < 1000) {
+        return votes.toString()
+    }
+
+    const divide = (votes : number, n : number, ): number => {
+        const res = votes / 10 ** n
+        return parseFloat(res.toFixed(1))
+    }
+
+    const divideAndFormat = (votes: number, n: number) : string => `${divide(votes, n)}k`
+
+    if (votes >= 1_000 && votes <= 9_999) {
+        return divideAndFormat(votes, 2)
+    } 
+
+    if (votes >= 10_000 && votes <= 99_999) {
+        return divideAndFormat(votes, 3)
+    }
+
+    if (votes >= 100_000 && votes <= 999_999) {
+        return divideAndFormat(votes, 4)
+    }
+
+    return divideAndFormat(votes, 5)
+}
+
 export function getTimeAgo(then: Date) : string {
     const diff = new Date().getTime() - then.getTime()
     const seconds = diff / 1000
