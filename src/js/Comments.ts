@@ -3,17 +3,41 @@ import { children } from './types'
 import { getTimeAgo, getVotes } from './util'
 import { v4 as uuidv4 } from 'uuid'
 
+class EventEmitter {
+    private events: { [key: string]: Array<(arg: any) => void> }
+
+    constructor() {
+        this.events = {}
+    }
+
+    emit(event: string, arg: any) {
+        for (const cb of this.events[event]) {
+            cb(arg)
+        }
+    }
+
+    subscribe(event: string, cb: (arg: any) => void) {
+        if (!(event in this.events)) {
+            this.events[event] = []
+        }
+
+        this.events[event].push(cb)
+    }
+}
+
 class Comments {
     private comments: Comment[]
     private level: number
     private hidden: boolean
     private id: string
+    private emitter: EventEmitter
 
     constructor(comments: Comment[], level: number=0, hidden: boolean=false, id: string='') {
         this.comments = comments
         this.level = level
         this.hidden = hidden
         this.id = id
+        this.emitter = new EventEmitter()
     }
 
     public render(): Element {
@@ -74,7 +98,7 @@ class Comments {
         const commentHeader = this.renderCommentHeader(user.username, datePosted)
         const commentMessage = createElement('p', { class: 'comment-message'}, message)
         const commentReplies = this.renderReplies(id, replies)
-        const commentActions = this.renderCommentActions(votes, commentReplies)
+        const commentActions = this.renderCommentActions(id, votes)
 
         commentMainContent.appendChild(commentHeader)
         commentMainContent.appendChild(commentMessage)
@@ -88,17 +112,17 @@ class Comments {
     }
 
     private renderReplies(id: string, replies: Comment[]) : Element {
-        if (replies.length === 0) {
-            return null
-        }
-
         let isExpanded = false
         
         const commentReplies = new Comments(replies, this.level + 1, true, id).render()
 
         const commentRepliesContainer = createElement('div', { class: 'comment-replies' })
+
+        if (replies.length === 0) {
+            commentRepliesContainer.classList.add('hide')
+        }
         
-        const commentRepliesAction = createElement('div', { class: 'comment-replies-action '}, `View ${commentReplies.children.length} replies`)
+        const commentRepliesAction = createElement('div', { class: 'comment-replies-action'}, `View ${commentReplies.children.length} replies`)
 
         commentRepliesAction.addEventListener('click', () => {
             const commentReplies = document.querySelector(`.comments--id-${id}`)
@@ -113,6 +137,20 @@ class Comments {
 
             isExpanded = !isExpanded
         })
+
+        this.emitter.subscribe(`add-comment-${id}`, (comment: Comment) => {
+            const hadNoChildren = commentReplies.children.length === 0
+
+            commentReplies.appendChild(this.renderComment(comment))
+
+            if (hadNoChildren) {
+                commentRepliesContainer.classList.remove('hide')
+            }
+
+            isExpanded = true
+            commentReplies.classList.remove('hide')
+            commentRepliesAction.innerHTML = `Hide ${commentReplies.children.length} replies`
+        }) 
          
         commentRepliesContainer.appendChild(commentRepliesAction)
         commentRepliesContainer.appendChild(commentReplies)
@@ -120,7 +158,7 @@ class Comments {
         return commentRepliesContainer
     }
 
-    private renderReplySection(commentReplies: Element): Element {
+    private renderReplySection(id: string): Element {
         const replySection = createElement('div', { class: 'reply-section-container hide' })
 
         const topSection = createElement('div', { class: 'reply-top-section'})
@@ -133,7 +171,6 @@ class Comments {
         const bottomSection = createElement('div', { class: 'reply-bottom-section' })
         const cancelButton = createElement('div', { class: 'cancel-button' }, 'CANCEL')
         const replyButton = createElement('div', { class: 'reply-button' }, 'REPLY')
-
 
         let replyValue = ''
 
@@ -151,7 +188,7 @@ class Comments {
                     message: replyValue
                 }
 
-                commentReplies.children[1].appendChild(this.renderComment(newComment))
+                this.emitter.emit(`add-comment-${id}`, newComment)
 
                 replyValue = ''
                 inputReply.value = ''
@@ -184,7 +221,7 @@ class Comments {
         return replySection
     }
 
-    private renderCommentActions(votes: number, commentReplies: Element): Element {
+    private renderCommentActions(id: string, votes: number): Element {
         let currVotes = votes
 
         const commentActions = createElement('div', { class: 'comment-actions' })
@@ -192,7 +229,7 @@ class Comments {
         const voteDown = createElement('span', { class: 'vote-action vote-action--down' }, '-')
         const commentVotes = createElement('span', { class: 'votes' }, getVotes(currVotes))
         const replyAction = createElement('span', { class: 'reply-action' }, 'REPLY')
-        const replySection = this.renderReplySection(commentReplies: Element)
+        const replySection = this.renderReplySection(id)
 
         voteUp.addEventListener('click', () => {
             currVotes += 1

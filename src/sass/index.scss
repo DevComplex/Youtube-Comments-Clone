@@ -38,64 +38,68 @@ html {
 
             .comment-actions {
                 
-                .reply-top-section {
-                    margin-top: 4px;
-                    display: flex;
-                    
-                    .profile-avatar {
-                        height: 24px;
-                        width: 24px;
-                        border-radius: 50%;
-                        margin-right: 14px;
-                    }
-    
-                    input {
-                        outline: 0;
-                        border-width: 0 0 2px;
-                        height: 21px;
-                        width: 100%;
-                        font-size: 16px;
+                .reply-section-container {
+                    margin-top: 12px;
 
-                        &:focus {
-                            border-bottom: 2px solid gray;
+                    .reply-top-section {
+                        margin-top: 4px;
+                        display: flex;
+                        
+                        .profile-avatar {
+                            height: 24px;
+                            width: 24px;
+                            border-radius: 50%;
+                            margin-right: 14px;
+                        }
+        
+                        input {
+                            outline: 0;
+                            border-width: 0 0 2px;
+                            height: 21px;
+                            width: 100%;
+                            font-size: 16px;
+    
+                            &:focus {
+                                border-bottom: 2px solid gray;
+                            }
                         }
                     }
-                }
-
-                .reply-bottom-section {
-                    display: flex;
-                    flex-direction: row-reverse;
-                    margin-top: 8px;
-
-                    .cancel-button {
-                        width: 72px;
-                        height: 36px;
+    
+                    .reply-bottom-section {
                         display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        color: #606060;
-                        cursor: pointer;
-                        margin-right: 16px;
+                        flex-direction: row-reverse;
+                        margin-top: 8px;
+    
+                        .cancel-button {
+                            width: 72px;
+                            height: 36px;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            color: #606060;
+                            cursor: pointer;
+                            margin-right: 16px;
+                        }
+    
+                        .enabled {
+                            background-color: rgb(6, 95, 212) !important;
+                        }
+    
+                        .reply-button {
+                            cursor: pointer;
+                            border-radius: 2px;
+                            color: white;
+                            width: 72px;
+                            height: 36px;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            background-color: rgb(204, 204, 204);
+                        }
                     }
-
-                    .enabled {
-                        background-color: rgb(6, 95, 212) !important;
-                    }
-
-                    .reply-button {
-                        cursor: pointer;
-                        border-radius: 2px;
-                        color: white;
-                        width: 72px;
-                        height: 36px;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        background-color: rgb(204, 204, 204);
-                    }
+    
+    
                 }
-
-
                 margin-top: 8px;
 
                 .vote-action {
