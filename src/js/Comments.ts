@@ -1,6 +1,7 @@
 import { Comment } from './interfaces'
 import { children } from './types'
 import { getTimeAgo, getVotes } from './util'
+import { v4 as uuidv4 } from 'uuid'
 
 class Comments {
     private comments: Comment[]
@@ -71,9 +72,9 @@ class Comments {
         const commentMainContent = createElement('div', { class: 'comment-main-content '})
         
         const commentHeader = this.renderCommentHeader(user.username, datePosted)
-        const commentActions = this.renderCommentActions(votes)
         const commentMessage = createElement('p', { class: 'comment-message'}, message)
         const commentReplies = this.renderReplies(id, replies)
+        const commentActions = this.renderCommentActions(votes, commentReplies)
 
         commentMainContent.appendChild(commentHeader)
         commentMainContent.appendChild(commentMessage)
@@ -91,30 +92,27 @@ class Comments {
             return null
         }
 
-        const SHOW_MESSAGE = `View ${replies.length} replies`
-        const HIDE_MESSAGE = `Hide ${replies.length} replies`
-
         let isExpanded = false
         
+        const commentReplies = new Comments(replies, this.level + 1, true, id).render()
+
         const commentRepliesContainer = createElement('div', { class: 'comment-replies' })
         
-        const commentRepliesAction = createElement('div', { class: 'comment-replies-action '}, SHOW_MESSAGE)
+        const commentRepliesAction = createElement('div', { class: 'comment-replies-action '}, `View ${commentReplies.children.length} replies`)
 
         commentRepliesAction.addEventListener('click', () => {
             const commentReplies = document.querySelector(`.comments--id-${id}`)
 
             if (isExpanded) {
                 commentReplies.classList.add('hide')
-                commentRepliesAction.innerHTML = SHOW_MESSAGE
+                commentRepliesAction.innerHTML = `View ${commentReplies.children.length} replies`
             } else {
                 commentReplies.classList.remove('hide')
-                commentRepliesAction.innerHTML = HIDE_MESSAGE
+                commentRepliesAction.innerHTML = `Hide ${commentReplies.children.length} replies`
             }
 
             isExpanded = !isExpanded
         })
-
-        const commentReplies = new Comments(replies, this.level + 1, true, id).render()
          
         commentRepliesContainer.appendChild(commentRepliesAction)
         commentRepliesContainer.appendChild(commentReplies)
@@ -122,13 +120,79 @@ class Comments {
         return commentRepliesContainer
     }
 
-    private renderCommentActions(votes: number): Element {
+    private renderReplySection(commentReplies: Element): Element {
+        const replySection = createElement('div', { class: 'reply-section-container hide' })
+
+        const topSection = createElement('div', { class: 'reply-top-section'})
+        const myAvatar = createElement('img', { class: 'profile-avatar', src: 'http://lh3.googleusercontent.com/-kx9VF9ZLPOw/AAAAAAAAAAI/AAAAAAAAAAA/AMZuucmMt_bsuybzC6vMz1l6jL7blh2MYA/s88/photo.jpg'})
+        const inputReply = createElement('input', { class: 'input-reply', type: 'text', placeholder: 'Add a public reply...'}) as HTMLInputElement
+                
+        topSection.appendChild(myAvatar)
+        topSection.appendChild(inputReply)
+
+        const bottomSection = createElement('div', { class: 'reply-bottom-section' })
+        const cancelButton = createElement('div', { class: 'cancel-button' }, 'CANCEL')
+        const replyButton = createElement('div', { class: 'reply-button' }, 'REPLY')
+
+
+        let replyValue = ''
+
+        replyButton.addEventListener('click', () => {
+            if (replyValue) {
+                const newComment = {
+                    id: uuidv4(),
+                    user: {
+                        username: 'Pedram T\'Kanchi',
+                        avatar: 'http://lh3.googleusercontent.com/-kx9VF9ZLPOw/AAAAAAAAAAI/AAAAAAAAAAA/AMZuucmMt_bsuybzC6vMz1l6jL7blh2MYA/s88/photo.jpg'
+                    },
+                    votes: 0,
+                    datePosted: new Date(),
+                    replies: [] as Comment[],
+                    message: replyValue
+                }
+
+                commentReplies.children[1].appendChild(this.renderComment(newComment))
+
+                replyValue = ''
+                inputReply.value = ''
+                replySection.classList.add('hide')
+            }
+        })
+
+        inputReply.addEventListener('input', (event) => {
+            const target = event.target as HTMLInputElement
+            replyValue = target.value
+
+            if (replyValue) {
+                replyButton.classList.add('enabled')                
+            } else {
+                replyButton.classList.remove('enabled')
+            }
+        })
+
+        cancelButton.addEventListener('click', () => {
+            replySection.classList.add('hide')
+        })
+
+
+        bottomSection.appendChild(replyButton)
+        bottomSection.appendChild(cancelButton)
+
+        replySection.appendChild(topSection)
+        replySection.appendChild(bottomSection)
+
+        return replySection
+    }
+
+    private renderCommentActions(votes: number, commentReplies: Element): Element {
         let currVotes = votes
 
         const commentActions = createElement('div', { class: 'comment-actions' })
         const voteUp = createElement('span', { class: 'vote-action vote-action--up' }, '+')
         const voteDown = createElement('span', { class: 'vote-action vote-action--down' }, '-')
         const commentVotes = createElement('span', { class: 'votes' }, getVotes(currVotes))
+        const replyAction = createElement('span', { class: 'reply-action' }, 'REPLY')
+        const replySection = this.renderReplySection(commentReplies: Element)
 
         voteUp.addEventListener('click', () => {
             currVotes += 1
@@ -140,9 +204,15 @@ class Comments {
             commentVotes.innerHTML = getVotes(currVotes)
         })
 
+        replyAction.addEventListener('click', () => {
+            replySection.classList.remove('hide')
+        })
+
         commentActions.appendChild(voteUp)
         commentActions.appendChild(commentVotes)
         commentActions.appendChild(voteDown)
+        commentActions.appendChild(replyAction)
+        commentActions.appendChild(replySection)
 
         return commentActions
     }
