@@ -12,6 +12,7 @@ const data = [
         datePosted: new Date(),
         replies: [
             {
+                id: uuidv4(),
                 user: {
                     username: 'Abe McGee',
                     avatar: 'https://yt3.ggpht.com/a/AATXAJwHH4GLcbtf_Vil-BMf3trfMrhrsHfBvlpKmw=s48-c-k-c0xffffffff-no-rj-mo'
