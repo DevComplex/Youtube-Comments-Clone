@@ -30,7 +30,7 @@
     "webpack-dev-server": "^3.7.2"
   },
   "dependencies": {
-    "@types/uuid": "^7.0.3",
+    "@types/uuid": "^8.0.0",
     "react": "*",
     "react-dom": "*",
     "styled-components": "*",
